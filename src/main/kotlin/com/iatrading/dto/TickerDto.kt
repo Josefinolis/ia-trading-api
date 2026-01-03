@@ -13,7 +13,7 @@ import java.time.LocalDateTime
 data class TickerCreateRequest(
     @field:NotBlank(message = "Ticker symbol is required")
     @field:Size(min = 1, max = 10, message = "Ticker must be between 1 and 10 characters")
-    @field:Pattern(regexp = "^[A-Z]+$", message = "Ticker must contain only uppercase letters")
+    @field:Pattern(regexp = "^[A-Z0-9]+$", message = "Ticker must contain only uppercase letters and numbers")
     val ticker: String,
 
     @field:Size(max = 200, message = "Name must not exceed 200 characters")
