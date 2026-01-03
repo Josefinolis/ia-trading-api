@@ -1,0 +1,153 @@
+spring:
+  application:
+    name: ia-trading-api
+
+  # Enable virtual threads (Java 21+)
+  threads:
+    virtual:
+      enabled: true
+
+  # Database Configuration
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/ia_trading}
+    username: ${DATABASE_USERNAME:postgres}
+    password: ${DATABASE_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  # JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        jdbc:
+          batch_size: 25
+        order_inserts: true
+        order_updates: true
+
+  # Jackson Configuration
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+
+# Server Configuration
+server:
+  port: ${PORT:8080}
+  shutdown: graceful
+  tomcat:
+    threads:
+      max: 200
+      min-spare: 10
+
+# Management/Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when_authorized
+
+# Logging
+logging:
+  level:
+    root: INFO
+    com.iatrading: DEBUG
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql.BasicBinder: WARN
+
+# OpenAPI/Swagger
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+
+# Custom Application Configuration
+app:
+  # API Keys (from environment variables)
+  alpha-vantage:
+    api-key: ${ALPHA_VANTAGE_API_KEY:}
+    base-url: https://www.alphavantage.co/query
+    calls-per-minute: 5
+
+  gemini:
+    api-key: ${GEMINI_API_KEY:}
+    model: gemini-2.5-flash-lite
+    calls-per-minute: 15
+
+  reddit:
+    client-id: ${REDDIT_CLIENT_ID:}
+    client-secret: ${REDDIT_CLIENT_SECRET:}
+    user-agent: ia_trading/1.0
+    subreddits: wallstreetbets,stocks,investing,stockmarket,options
+    min-score: 10
+
+  twitter:
+    enabled: ${TWITTER_ENABLED:true}
+    min-likes: 10
+    min-retweets: 5
+    max-results: 50
+
+  # Scheduler Configuration
+  scheduler:
+    enabled: ${SCHEDULER_ENABLED:false}
+    news-fetch-interval-minutes: 30
+    analysis-interval-minutes: 5
+
+---
+# Development Profile
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  datasource:
+    url: jdbc:h2:mem:ia_trading;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+logging:
+  level:
+    com.iatrading: DEBUG
+
+---
+# Production Profile
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: validate
+
+logging:
+  level:
+    root: WARN
+    com.iatrading: INFO

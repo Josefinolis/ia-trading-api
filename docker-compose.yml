@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: ia_trading_db
+    environment:
+      POSTGRES_DB: ia_trading
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # IA Trading API
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ia_trading_api
+    ports:
+      - "8080:8080"
+    environment:
+      # Database
+      DATABASE_URL: jdbc:postgresql://postgres:5432/ia_trading
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres
+
+      # API Keys (set these in .env file or environment)
+      ALPHA_VANTAGE_API_KEY: ${ALPHA_VANTAGE_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      REDDIT_CLIENT_ID: ${REDDIT_CLIENT_ID:-}
+      REDDIT_CLIENT_SECRET: ${REDDIT_CLIENT_SECRET:-}
+
+      # Feature flags
+      TWITTER_ENABLED: ${TWITTER_ENABLED:-false}
+      SCHEDULER_ENABLED: ${SCHEDULER_ENABLED:-false}
+
+      # Spring profiles
+      SPRING_PROFILES_ACTIVE: prod
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 3
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

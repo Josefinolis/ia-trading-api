@@ -1,0 +1,33 @@
+version: '3.8'
+
+# Development compose file - uses H2 in-memory database
+# Usage: docker-compose -f docker-compose.dev.yml up
+
+services:
+  # IA Trading API (development mode)
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ia_trading_api_dev
+    ports:
+      - "8080:8080"
+    environment:
+      # Spring profiles
+      SPRING_PROFILES_ACTIVE: dev
+
+      # API Keys (set these in .env file or environment)
+      ALPHA_VANTAGE_API_KEY: ${ALPHA_VANTAGE_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      REDDIT_CLIENT_ID: ${REDDIT_CLIENT_ID:-}
+      REDDIT_CLIENT_SECRET: ${REDDIT_CLIENT_SECRET:-}
+
+      # Feature flags
+      TWITTER_ENABLED: ${TWITTER_ENABLED:-false}
+      SCHEDULER_ENABLED: ${SCHEDULER_ENABLED:-false}
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 3
