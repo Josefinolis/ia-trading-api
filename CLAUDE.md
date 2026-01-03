@@ -86,7 +86,7 @@ docker-compose up
 
 ## Production
 
-- **URL**: http://195.20.235.94:8082
+- **URL**: http://195.20.235.94
 - **Deploy**: Push to `main` triggers GitHub Actions
 - **Infrastructure**: https://github.com/Josefinolis/documentation
 

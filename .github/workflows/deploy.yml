@@ -65,9 +65,9 @@ jobs:
             # Create volume for postgres if not exists
             docker volume create ia-trading-postgres 2>/dev/null || true
 
-            # Stop and remove old Kotlin API container
-            docker stop ia-trading-api-kt 2>/dev/null || true
-            docker rm ia-trading-api-kt 2>/dev/null || true
+            # Stop and remove old API container (replaces Python version)
+            docker stop ia-trading-api 2>/dev/null || true
+            docker rm ia-trading-api 2>/dev/null || true
 
             # Start PostgreSQL (if not running - shared with Python version)
             if ! docker ps | grep -q ia-trading-db; then
@@ -91,12 +91,12 @@ jobs:
             docker pull ghcr.io/josefinolis/ia-trading-api:latest
 
             docker run -d \
-              --name ia-trading-api-kt \
+              --name ia-trading-api \
               --network ia-trading-network \
               --restart unless-stopped \
               --memory=512m \
               --memory-swap=768m \
-              -p 8082:8080 \
+              -p 80:8080 \
               -e SPRING_PROFILES_ACTIVE=production \
               -e SPRING_DATASOURCE_URL=jdbc:postgresql://ia-trading-db:5432/ia_trading \
               -e SPRING_DATASOURCE_USERNAME=ia_trading \
@@ -112,4 +112,4 @@ jobs:
 
             # Health check
             sleep 15
-            curl -f http://localhost:8082/health || exit 1
+            curl -f http://localhost:80/health || exit 1
