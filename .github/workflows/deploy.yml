@@ -87,8 +87,8 @@ jobs:
               sleep 10
             fi
 
-            # Pull and run Kotlin API
-            docker pull ghcr.io/${{ github.repository_owner }}/ia-trading-api:latest
+            # Pull and run Kotlin API (lowercase repo name required)
+            docker pull ghcr.io/josefinolis/ia-trading-api:latest
 
             docker run -d \
               --name ia-trading-api-kt \
@@ -105,7 +105,7 @@ jobs:
               -e GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} \
               -e SCHEDULER_ENABLED=false \
               -e JAVA_OPTS="-Xms256m -Xmx384m" \
-              ghcr.io/${{ github.repository_owner }}/ia-trading-api:latest
+              ghcr.io/josefinolis/ia-trading-api:latest
 
             # Cleanup old images
             docker image prune -f
