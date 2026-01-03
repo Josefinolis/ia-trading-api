@@ -1,6 +1,8 @@
 package com.iatrading.entity
 
 import jakarta.persistence.*
+import jakarta.persistence.AttributeConverter
+import jakarta.persistence.Converter
 import java.time.LocalDateTime
 
 /**
@@ -53,7 +55,6 @@ data class NewsRecord(
 
     // Status tracking
     @Column(nullable = false, length = 20)
-    @Enumerated(EnumType.STRING)
     var status: NewsStatus = NewsStatus.PENDING,
 
     @Column(name = "fetched_at", nullable = false)
@@ -78,5 +79,31 @@ data class NewsRecord(
 
 enum class NewsStatus {
     PENDING,
-    ANALYZED
+    ANALYZED;
+
+    companion object {
+        fun fromString(value: String): NewsStatus {
+            return when (value.lowercase()) {
+                "pending" -> PENDING
+                "analyzed" -> ANALYZED
+                else -> throw IllegalArgumentException("Unknown status: $value")
+            }
+        }
+    }
+
+    fun toDbValue(): String = name.lowercase()
+}
+
+/**
+ * JPA Converter for NewsStatus to handle lowercase values from Python API.
+ */
+@Converter(autoApply = true)
+class NewsStatusConverter : AttributeConverter<NewsStatus, String> {
+    override fun convertToDatabaseColumn(attribute: NewsStatus?): String? {
+        return attribute?.toDbValue()
+    }
+
+    override fun convertToEntityAttribute(dbData: String?): NewsStatus? {
+        return dbData?.let { NewsStatus.fromString(it) }
+    }
 }
