@@ -94,9 +94,9 @@ jobs:
               --name ia-trading-api \
               --network ia-trading-network \
               --restart unless-stopped \
-              --memory=512m \
-              --memory-swap=768m \
-              -p 80:8080 \
+              --memory=1g \
+              --memory-swap=1536m \
+              -p 8000:8080 \
               -e SPRING_PROFILES_ACTIVE=production \
               -e SPRING_DATASOURCE_URL=jdbc:postgresql://ia-trading-db:5432/ia_trading \
               -e SPRING_DATASOURCE_USERNAME=ia_trading \
@@ -110,6 +110,6 @@ jobs:
             # Cleanup old images
             docker image prune -f
 
-            # Health check
+            # Health check (via nginx reverse proxy)
             sleep 15
-            curl -f http://localhost:80/health || exit 1
+            curl -f http://localhost/health || exit 1
