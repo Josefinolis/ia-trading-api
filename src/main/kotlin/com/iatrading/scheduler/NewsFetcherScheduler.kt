@@ -29,7 +29,7 @@ class NewsFetcherScheduler(
      * Fetch news for all active tickers.
      * Runs every 30 minutes by default (configurable).
      */
-    @Scheduled(fixedDelayString = "#{${app.scheduler.news-fetch-interval-minutes:30} * 60000}")
+    @Scheduled(fixedDelayString = "#{\${app.scheduler.news-fetch-interval-minutes:30} * 60000}")
     fun fetchAllNewsScheduled() {
         if (!appProperties.scheduler.enabled) {
             logger.debug { "Scheduler disabled, skipping news fetch" }
