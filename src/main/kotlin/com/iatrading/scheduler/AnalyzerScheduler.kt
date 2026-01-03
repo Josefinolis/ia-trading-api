@@ -29,7 +29,7 @@ class AnalyzerScheduler(
      * Analyze pending news items.
      * Runs every 5 minutes by default (configurable).
      */
-    @Scheduled(fixedDelayString = "\${app.scheduler.analysis-interval-minutes:5}000")
+    @Scheduled(fixedDelayString = "#{${app.scheduler.analysis-interval-minutes:5} * 60000}")
     fun analyzePendingScheduled() {
         if (!appProperties.scheduler.enabled) {
             logger.debug { "Scheduler disabled, skipping analysis" }

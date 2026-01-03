@@ -1,5 +1,6 @@
 package com.iatrading.controller
 
+import com.iatrading.config.AppProperties
 import com.iatrading.dto.*
 import com.iatrading.util.RateLimitManager
 import io.swagger.v3.oas.annotations.Operation
@@ -17,6 +18,7 @@ private val logger = KotlinLogging.logger {}
 class HealthController(
     private val dataSource: DataSource,
     private val rateLimitManager: RateLimitManager,
+    private val appProperties: AppProperties,
     @Value("\${spring.application.name:ia-trading-api}") private val appName: String
 ) {
 
@@ -31,21 +33,37 @@ class HealthController(
     }
 
     @GetMapping("/health")
-    @Operation(summary = "Health check endpoint - lightweight, no DB call")
+    @Operation(summary = "Health check endpoint with DB status")
     fun healthCheck(): HealthResponse {
+        val dbStatus = checkDatabase()
+        val schedulerStatus = if (appProperties.scheduler.enabled) "enabled" else "disabled"
+        val status = if (dbStatus == "connected") "healthy" else "degraded"
+
         return HealthResponse(
-            status = "healthy",
+            status = status,
             version = "1.0.0",
-            database = "unknown", // Don't check DB in lightweight health endpoint
-            scheduler = "unknown"
+            database = dbStatus,
+            scheduler = schedulerStatus
         )
     }
 
     @GetMapping("/health/full")
     @Operation(summary = "Full health check with database verification")
     fun healthCheckFull(): HealthResponse {
-        // Test database connection
-        val dbStatus = try {
+        val dbStatus = checkDatabase()
+        val schedulerStatus = if (appProperties.scheduler.enabled) "enabled" else "disabled"
+        val status = if (dbStatus == "connected") "healthy" else "degraded"
+
+        return HealthResponse(
+            status = status,
+            version = "1.0.0",
+            database = dbStatus,
+            scheduler = schedulerStatus
+        )
+    }
+
+    private fun checkDatabase(): String {
+        return try {
             dataSource.connection.use { connection ->
                 connection.createStatement().use { statement ->
                     statement.executeQuery("SELECT 1")
@@ -56,15 +74,6 @@ class HealthController(
             logger.error(e) { "Database health check failed" }
             "error"
         }
-
-        val status = if (dbStatus == "connected") "healthy" else "degraded"
-
-        return HealthResponse(
-            status = status,
-            version = "1.0.0",
-            database = dbStatus,
-            scheduler = "unknown" // Will be updated when scheduler is implemented
-        )
     }
 
     @GetMapping("/api/status")
