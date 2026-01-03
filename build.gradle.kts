@@ -18,7 +18,6 @@ java {
 
 repositories {
     mavenCentral()
-    maven { url = uri("https://jitpack.io") }
 }
 
 dependencies {
@@ -51,9 +50,6 @@ dependencies {
 
     // Google Gemini AI SDK
     implementation("com.google.cloud:google-cloud-vertexai:1.1.0")
-
-    // Reddit API (JRAW)
-    implementation("net.dean.jraw:JRAW:1.1.0")
 
     // Resilience (retry, circuit breaker)
     implementation("io.github.resilience4j:resilience4j-spring-boot3:2.2.0")
