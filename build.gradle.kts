@@ -18,6 +18,7 @@ java {
 
 repositories {
     mavenCentral()
+    maven { url = uri("https://jitpack.io") }
 }
 
 dependencies {
@@ -53,9 +54,6 @@ dependencies {
 
     // Reddit API (JRAW)
     implementation("net.dean.jraw:JRAW:1.1.0")
-
-    // Rate limiting
-    implementation("io.github.bucket4j:bucket4j-core:8.7.0")
 
     // Resilience (retry, circuit breaker)
     implementation("io.github.resilience4j:resilience4j-spring-boot3:2.2.0")
